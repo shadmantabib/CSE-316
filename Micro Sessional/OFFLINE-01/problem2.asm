@@ -1,0 +1,122 @@
+.MODEL SMALL
+.STACK 100H
+.DATA
+    PROMPT1 DB 'Enter the first lowercase letter: $'
+    PROMPT2 DB 'Enter the second lowercase letter: $'
+    PROMPT3 DB 'Enter the third lowercase letter: $'
+    RESULT DB 'The second highest letter is: $'
+    EQUAL DB 'All letters are equal$'
+    LETTER1 DB ?
+    LETTER2 DB ?
+    LETTER3 DB ?
+    SECOND_HIGH DB ? 
+    NEWLINE DB 0Dh, 0Ah, '$'
+
+.CODE
+.STARTUP
+    MOV AX, @DATA
+    MOV DS, AX
+
+    ; Read first letter
+    MOV AH, 9
+    LEA DX, PROMPT1
+    INT 21H
+    MOV AH, 1
+    INT 21H
+    MOV LETTER1, AL
+    LEA DX, NEWLINE  
+    MOV AH, 9
+    INT 21H
+
+    ; Read second letter
+    MOV AH, 9
+    LEA DX, PROMPT2
+    INT 21H
+    MOV AH, 1
+    INT 21H
+    MOV LETTER2, AL
+    LEA DX, NEWLINE  
+    MOV AH, 9
+    INT 21H
+
+    ; Read third letter
+    MOV AH, 9
+    LEA DX, PROMPT3
+    INT 21H
+    MOV AH, 1
+    INT 21H
+    MOV LETTER3, AL
+    LEA DX, NEWLINE  
+    MOV AH, 9
+    INT 21H
+
+    ; Compare LETTER1, LETTER2, LETTER3 and find second highest
+    MOV AL, LETTER1
+    MOV BL, LETTER2
+    MOV CL, LETTER3
+
+    ; Compare LETTER1 and LETTER2
+    CMP AL, BL
+    JE CHECK_LETTER3  ; If LETTER1 = LETTER2
+    JG COMPAREGREATERCASE   ; If LETTER1 > LETTER2
+    JL COMPARELESSCASE  ;letter1<letter2
+   
+    
+
+COMPAREGREATERCASE:
+    CMP BL,CL
+    JL COMP_C_WITH_A
+    JE SECONDMAKER
+    JG SECONDMAKER
+COMP_C_WITH_A:
+    CMP AL,CL
+    JL FIRSTMAKER
+    JG THIRDMAKER
+    JE SECONDMAKER     
+COMPARELESSCASE:
+    CMP BL,CL
+    JE FIRSTMAKER
+    JL SECONDMAKER
+    JG COMP_C_AND_A_FOR_LESS
+        
+COMP_C_AND_A_FOR_LESS:
+    CMP AL,CL
+    JE FIRSTMAKER
+    JL THIRDMAKER
+    JG FIRSTMAKER
+    
+
+
+CHECK_LETTER3:
+    CMP CL, AL        
+    JE ALL_LETTERS_EQUAL
+    JG FIRSTMAKER ;
+    JL THIRDMAKER
+    JMP DISPLAY_RESULT
+    
+SECONDMAKER:
+MOV SECOND_HIGH,BL
+JMP DISPLAY_RESULT
+THIRDMAKER:
+MOV SECOND_HIGH,CL
+JMP DISPLAY_RESULT
+FIRSTMAKER:
+MOV SECOND_HIGH,AL
+JMP DISPLAY_RESULT
+    
+ALL_LETTERS_EQUAL:
+    LEA DX, EQUAL
+    MOV AH, 9
+    INT 21H
+    JMP END_PROGRAM
+
+DISPLAY_RESULT:
+    LEA DX, RESULT
+    MOV AH, 9
+    INT 21H
+    MOV DL, SECOND_HIGH
+    MOV AH, 2
+    INT 21H
+
+END_PROGRAM:
+    .EXIT
